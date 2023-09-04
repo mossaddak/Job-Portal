@@ -5,7 +5,12 @@ from django.contrib.auth.models import AbstractUser
 from django.db.models import Q, UniqueConstraint
 
 from .managers import CustomeUserManager
-from .choices import OrganizationStatus, OrganizationUserRole, OrganizationUserStatus
+from .choices import (
+    OrganizationStatus,
+    OrganizationUserRole,
+    OrganizationUserStatus,
+    UserStatus,
+)
 
 
 def upload_to_user_profile_image(instance, filename):
@@ -27,6 +32,13 @@ class User(AbstractUser):
     )
     is_applicant = models.BooleanField(default=False)
     image = models.ImageField(upload_to=upload_to_user_profile_image, null=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=UserStatus.choices,
+        db_index=True,
+        default=UserStatus.ACTIVE,
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
@@ -60,6 +72,15 @@ class Organization(models.Model):
             organization=self,
             user=user,
             role=OrganizationUserRole.HR,
+            status=OrganizationUserStatus.ACTIVE,
+            is_default=is_default,
+        )
+
+    def add_owner(self, user: User, is_default: bool = False):
+        return OrganizationUser.objects.create(
+            organization=self,
+            user=user,
+            role=OrganizationUserRole.OWNER,
             status=OrganizationUserStatus.ACTIVE,
             is_default=is_default,
         )

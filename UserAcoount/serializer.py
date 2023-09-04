@@ -5,6 +5,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 
 from .utils import TokenHelper
+from .models import Organization, OrganizationUser
 
 User = get_user_model()
 
@@ -20,7 +21,6 @@ class UserAccountSerializer(serializers.ModelSerializer):
             "email",
             "date_joined",
             "last_login",
-            "user_type",
             "password",
         ]
 
@@ -34,7 +34,6 @@ class UserAccountSerializer(serializers.ModelSerializer):
             last_name=validated_data.get("last_name", ""),
             username=validated_data["username"],
             email=validated_data["email"].lower(),
-            user_type=validated_data.get("user_type", ""),
         )
         user.set_password(password)
         user.save()
@@ -77,7 +76,6 @@ class PrivateUserProfile(serializers.ModelSerializer):
             "last_name",
             "username",
             "email",
-            "user_type",
             "date_joined",
             "last_login",
             "password",
@@ -90,3 +88,40 @@ class PrivateUserProfile(serializers.ModelSerializer):
         if password:
             validated_data["password"] = make_password(password)
         return super().update(instance, validated_data)
+
+
+class PublicOrganizationUserOnboarding(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(min_length=4, max_length=50, write_only=True)
+    first_name = serializers.CharField(min_length=2, max_length=50)
+    last_name = serializers.CharField(min_length=2, max_length=50)
+    organization_name = serializers.CharField(min_length=2, max_length=50)
+
+    def validate_email(self, data):
+        email = data.lower()
+        if User.objects.filter(email=email).exists():
+            raise serializers.ValidationError("User with email already exists!")
+        return data
+
+    def create(self, validated_data, *args, **kwargs):
+        email = validated_data["email"].lower()
+        password = validated_data["password"]
+        first_name = validated_data["first_name"]
+        last_name = validated_data["last_name"]
+        organization_name = validated_data["organization_name"]
+
+        user = User.objects.create(
+            email=email,
+            username=email,
+            first_name=first_name,
+            last_name=last_name,
+            is_active=True,
+        )
+
+        user.set_password(password)
+        user.save()
+        # Create organization
+        organization = Organization.objects.create(name=organization_name)
+        # Create organization user
+        organization.add_owner(user)
+        return validated_data

@@ -9,6 +9,7 @@ from .serializer import (
     UserAccountSerializer,
     UserAccountLoginSerializer,
     PrivateUserProfile,
+    PublicOrganizationUserOnboarding,
 )
 
 User = get_user_model()
@@ -32,3 +33,8 @@ class PrivateUserprofile(generics.RetrieveUpdateDestroyAPIView):
 
     def get_object(self):
         return get_object_or_404(User, email=self.request.user.email)
+
+
+class PublicOrganizationOnboarding(generics.CreateAPIView):
+    serializer_class = PublicOrganizationUserOnboarding
+    permission_classes = [AllowAny]

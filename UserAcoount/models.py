@@ -6,11 +6,12 @@ from django.contrib.auth.models import AbstractUser
 from .managers import CustomeUserManager
 
 
+def upload_to_user_profile_image(instance, filename):
+    return f"media/{instance.pk}-{instance.username}/images/profile_image.png"
+
+
 # Create your models here.
 class User(AbstractUser):
-    SELLER = "Seller"
-    BUYER = "Buyer"
-    ACCOUNT_TYPE_CHOICES = [(SELLER, "Seller"), (BUYER, "Buyer")]
     uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     email = models.EmailField(
         max_length=50,
@@ -18,9 +19,8 @@ class User(AbstractUser):
         null=False,
         error_messages={"unique": "the email must be unique"},
     )
-    user_type = models.CharField(
-        max_length=50, choices=ACCOUNT_TYPE_CHOICES, default=BUYER
-    )
+    is_applicant = models.BooleanField(default=False)
+    image = models.ImageField(upload_to=upload_to_user_profile_image, null=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
@@ -29,12 +29,3 @@ class User(AbstractUser):
 
     def __str__(self):
         return f"{self.uid}.{self.email}"
-
-
-class Address(models.Model):
-    uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="Addresses")
-    post_office = models.CharField(max_length=250, null=True, blank=True)
-
-    def __str__(self):
-        return f"{self.uid}.{self.user}"

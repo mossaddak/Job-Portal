@@ -24,6 +24,7 @@ def upload_to_organization_image(instance, filename):
 # Create your models here.
 class User(AbstractUser):
     uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    username = models.CharField(max_length=30, unique=False, blank=True, null=True)
     email = models.EmailField(
         max_length=50,
         unique=True,
@@ -41,7 +42,7 @@ class User(AbstractUser):
     )
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["username"]
+    REQUIRED_FIELDS = ["first_name"]
 
     objects = CustomeUserManager()
 

@@ -4,8 +4,9 @@ from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 
-from .utils import TokenHelper
+from .helpers.users import UserHelper, OrganizationHelper
 from .models import Organization, OrganizationUser
+from .utils import TokenHelper
 
 User = get_user_model()
 
@@ -17,7 +18,6 @@ class UserAccountSerializer(serializers.ModelSerializer):
             "uid",
             "first_name",
             "last_name",
-            "username",
             "email",
             "date_joined",
             "last_login",
@@ -32,8 +32,7 @@ class UserAccountSerializer(serializers.ModelSerializer):
         user = User.objects.create(
             first_name=validated_data.get("first_name", ""),
             last_name=validated_data.get("last_name", ""),
-            username=validated_data["username"],
-            email=validated_data["email"].lower(),
+            email=validated_data.get("email").lower(),
         )
         user.set_password(password)
         user.save()
@@ -93,7 +92,7 @@ class PrivateUserProfile(serializers.ModelSerializer):
 class PublicOrganizationUserOnboarding(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(min_length=4, max_length=50, write_only=True)
-    first_name = serializers.CharField(min_length=2, max_length=50)
+    first_name = serializers.CharField(min_length=2, max_length=50, required=False)
     last_name = serializers.CharField(min_length=2, max_length=50)
     organization_name = serializers.CharField(min_length=2, max_length=50)
 
@@ -104,24 +103,20 @@ class PublicOrganizationUserOnboarding(serializers.Serializer):
         return data
 
     def create(self, validated_data, *args, **kwargs):
-        email = validated_data["email"].lower()
-        password = validated_data["password"]
-        first_name = validated_data["first_name"]
-        last_name = validated_data["last_name"]
-        organization_name = validated_data["organization_name"]
+        email = validated_data.get("email")
+        password = validated_data.get("password")
+        first_name = validated_data.get("first_name", "")
+        last_name = validated_data.get("last_name", "")
+        organization_name = validated_data.get("organization_name", "")
 
-        user = User.objects.create(
-            email=email,
-            username=email,
-            first_name=first_name,
-            last_name=last_name,
-            is_active=True,
+        # Create user
+        user = UserHelper.create_user(self, email, password, first_name, last_name)
+
+        # Create organization
+        organization = OrganizationHelper.create_organization(
+            self, name=organization_name
         )
 
-        user.set_password(password)
-        user.save()
-        # Create organization
-        organization = Organization.objects.create(name=organization_name)
         # Create organization user
-        organization.add_owner(user)
+        OrganizationHelper.create_organization_user(self, organization, user)
         return validated_data

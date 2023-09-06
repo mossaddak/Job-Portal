@@ -5,8 +5,8 @@ from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 
 from .helpers.users import UserHelper, OrganizationHelper
-from .models import Organization, OrganizationUser
 from .utils import TokenHelper
+from .choices import OrganizationUserRole
 
 User = get_user_model()
 
@@ -118,5 +118,12 @@ class PublicOrganizationUserOnboarding(serializers.Serializer):
         )
 
         # Create organization user
-        OrganizationHelper.create_organization_user(self, organization, user)
+        organization_user = OrganizationHelper.create_organization_user(
+            self, organization, user
+        )
+
+        # Create organization user role
+        OrganizationHelper.create_user_role(
+            self, user, OrganizationUserRole.OWNER, organization_user
+        )
         return validated_data

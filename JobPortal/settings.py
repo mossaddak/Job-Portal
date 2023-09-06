@@ -46,7 +46,7 @@ THIRDPARTY_APPS = [
     "drf_yasg",
     "rest_framework_simplejwt",
     "corsheaders",
-    'django_cleanup.apps.CleanupConfig', 
+    "django_cleanup.apps.CleanupConfig",
 ]
 
 PROJECT_APPS = [
@@ -182,6 +182,10 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "UPDATE_LAST_LOGIN": True,
+}
+
+SPECTACULAR_SETTINGS = {
+    "SCHEMA_PATH_PREFIX": r"/api/v[0-9]",
 }
 
 

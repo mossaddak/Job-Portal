@@ -90,10 +90,6 @@ class Organization(models.Model):
 class OrganizationUser(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    role = models.CharField(
-        choices=OrganizationUserRole.choices,
-        max_length=20,
-    )
     status = models.CharField(
         max_length=20,
         choices=OrganizationUserStatus.choices,
@@ -112,4 +108,15 @@ class OrganizationUser(models.Model):
         ]
 
     def __str__(self):
-        return f"ID: {self.id}, Org: {self.organization}, User: {self.user}, Role: {self.role}, Status: {self.status}"
+        return f"ID: {self.id}, Org: {self.organization}, User: {self.user}, Status: {self.status}"
+
+
+class UserRole(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    organization_user = models.ForeignKey(
+        OrganizationUser, on_delete=models.CASCADE, null=True, blank=True
+    )
+    role = models.CharField(
+        choices=OrganizationUserRole.choices,
+        max_length=20,
+    )

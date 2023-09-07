@@ -6,6 +6,7 @@ from .views import (
     UserLogin,
     PrivateUserprofile,
     PublicOrganizationOnboarding,
+    PrivateOrganizationUser,
 )
 
 urlpatterns = [
@@ -16,5 +17,10 @@ urlpatterns = [
         r"organization/onboarding",
         PublicOrganizationOnboarding.as_view(),
         name="me.organization-onboarding",
+    ),
+    path(
+        r"organization/user",
+        PrivateOrganizationUser.as_view(),
+        name="me.organization-hr",
     ),
 ]

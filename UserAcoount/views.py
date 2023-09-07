@@ -1,8 +1,9 @@
-from django.contrib.auth import get_user_model
-
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import get_object_or_404
+from rest_framework.response import Response
+
+from django.contrib.auth import get_user_model
 
 
 from .serializer import (
@@ -10,6 +11,7 @@ from .serializer import (
     UserAccountLoginSerializer,
     PrivateUserProfile,
     PublicOrganizationUserOnboarding,
+    PrivateOrganizationUserSerializer,
 )
 
 User = get_user_model()
@@ -37,4 +39,9 @@ class PrivateUserprofile(generics.RetrieveUpdateDestroyAPIView):
 
 class PublicOrganizationOnboarding(generics.CreateAPIView):
     serializer_class = PublicOrganizationUserOnboarding
+    permission_classes = [AllowAny]
+
+
+class PrivateOrganizationUser(generics.CreateAPIView):
+    serializer_class = PrivateOrganizationUserSerializer
     permission_classes = [AllowAny]

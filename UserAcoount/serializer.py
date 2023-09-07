@@ -3,10 +3,12 @@ from django.contrib.auth.hashers import make_password
 
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.generics import get_object_or_404
 
 from .helpers.users import UserHelper, OrganizationHelper
 from .utils import TokenHelper
-from .choices import OrganizationUserRole
+from .choices import OrganizationUserRole, OrganizationUserRole, OrganizationStatus
+from .models import OrganizationUser, UserRole, Organization
 
 User = get_user_model()
 
@@ -126,4 +128,77 @@ class PublicOrganizationUserOnboarding(serializers.Serializer):
         OrganizationHelper.create_user_role(
             self, user, OrganizationUserRole.OWNER, organization_user
         )
+        return validated_data
+
+
+class PrivateOrganizationUserSerializer(serializers.Serializer):
+    first_name = serializers.CharField(required=False)
+    last_time = serializers.CharField(required=False)
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+    role = serializers.ChoiceField(OrganizationUserRole.choices)
+
+    def create(self, validated_data):
+        first_name = validated_data.get("first_name", "")
+        last_name = validated_data.get("last_name", "")
+        email = validated_data.get("email")
+        role = validated_data.get("role")
+        password = validated_data.get("password")
+
+        # Authenticated user
+        user = self.context["request"].user
+
+        # Get my active organization
+        active_organization = user.get_organization()
+
+        try:
+            # The user I want to make my organization member
+            invited_user = User.objects.get(email=email)
+
+            # Check the user is organization member whether or not
+            organization_member = invited_user.is_organization_member()
+
+            if organization_member:
+                member_role = UserRole.objects.get(user=invited_user)
+                member_role.role = role
+                member_role.save()
+            else:
+                # Made the invited user into an organization user
+                organization_user = OrganizationHelper.create_organization_user(
+                    self,
+                    organization=active_organization,
+                    user=invited_user,
+                    status=OrganizationStatus.ACTIVE,
+                )
+
+                # Set the organization user role
+                OrganizationHelper.create_user_role(
+                    self,
+                    user=invited_user,
+                    role=role,
+                    organization_user=organization_user,
+                )
+
+        except User.DoesNotExist:
+            # Create new user
+            new_member = UserHelper.create_user(
+                self, email, password, first_name, last_name
+            )
+
+            # Create organization user
+            organization_user = OrganizationHelper.create_organization_user(
+                self,
+                organization=active_organization,
+                user=new_member,
+                status=OrganizationStatus.ACTIVE,
+            )
+
+            # Set the organization user role
+            OrganizationHelper.create_user_role(
+                self,
+                user=new_member,
+                role=role,
+                organization_user=organization_user,
+            )
+
         return validated_data

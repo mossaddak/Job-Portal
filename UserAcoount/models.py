@@ -53,6 +53,14 @@ class User(AbstractUser):
         name = f"{self.first_name} {self.last_name}"
         return name.strip()
 
+    def get_organization(self):
+        return (
+            self.organizationuser_set.filter().get(is_default=True).organization or None
+        )
+    
+    def is_organization_member(self):
+        return self.organizationuser_set.filter().exists() 
+
 
 class Organization(models.Model):
     uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)

@@ -42,16 +42,17 @@ DJANGO_APPS = [
 ]
 
 THIRDPARTY_APPS = [
-    "rest_framework",
-    "drf_yasg",
-    "rest_framework_simplejwt",
     "corsheaders",
+    "drf_yasg",
     "django_cleanup.apps.CleanupConfig",
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "silk",
 ]
 
 PROJECT_APPS = [
-    "UserAcoount",
     "common",
+    "UserAcoount",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRDPARTY_APPS + PROJECT_APPS
@@ -74,6 +75,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "silk.middleware.SilkyMiddleware",  # django silk
 ]
 
 ROOT_URLCONF = "JobPortal.urls"

@@ -57,4 +57,10 @@ urlpatterns = [
     ),
     path("admin/", admin.site.urls),
     path("", include("UserAcoount.urls")),
+
+    # Django silk
+    path("silk/", include("silk.urls", namespace="silk"))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+

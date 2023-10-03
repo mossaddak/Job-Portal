@@ -7,6 +7,9 @@ from .views import (
     PrivateUserprofile,
     PublicOrganizationOnboarding,
     PrivateOrganizationUser,
+    PublicUserList1,
+    PublicUserList2,
+    PublicUserList3
 )
 
 urlpatterns = [
@@ -22,5 +25,20 @@ urlpatterns = [
         r"organization/user",
         PrivateOrganizationUser.as_view(),
         name="me.organization-hr",
+    ),
+    path(
+        r"users1",
+        PublicUserList1.as_view(),
+        name="public.user1-list",
+    ),
+    path(
+        r"users2",
+        PublicUserList2.as_view(),
+        name="public.user2-list",
+    ),
+    path(
+        r"users3",
+        PublicUserList3.as_view(),
+        name="public.user3-list",
     ),
 ]

@@ -45,3 +45,50 @@ class PublicOrganizationOnboarding(generics.CreateAPIView):
 class PrivateOrganizationUser(generics.CreateAPIView):
     serializer_class = PrivateOrganizationUserSerializer
     permission_classes = [AllowAny]
+
+
+from django.db.models import Q
+from django.db.models import Case, Value, BooleanField, When, F, ExpressionWrapper, fields
+
+
+
+class PublicUserList1(generics.ListAPIView):
+    serializer_class = UserAccountSerializer
+    queryset = User.objects.filter(is_active=True).order_by("first_name")
+
+    def get_queryset(self):
+        return self.queryset.filter(first_name="") | self.queryset.filter(last_name="")
+
+
+class PublicUserList2(generics.ListAPIView):
+    serializer_class = UserAccountSerializer
+    queryset = User.objects.filter(is_active=True).order_by("first_name")
+
+    def get_queryset(self):
+        return self.queryset.filter(Q(first_name="") | Q(last_name="")).order_by(
+            "first_name" 
+        )
+
+
+class PublicUserList3(generics.ListAPIView):
+    serializer_class = UserAccountSerializer
+    queryset = (
+        User.objects.filter(is_active=True)
+        .annotate(
+            has_empty_name=ExpressionWrapper(
+                Case(
+                    When(Q(first_name="") | Q(last_name=""), then=Value(True)),
+                    default=Value(False),
+                    output_field=BooleanField(),
+                ),
+                output_field=fields.BooleanField(),
+            )
+        )
+        .order_by("first_name")
+    )
+
+    def get_queryset(self):
+        return self.queryset.filter(has_empty_name=True).order_by("first_name")
+
+
+

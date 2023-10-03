@@ -12,7 +12,7 @@ from ..choices import (
 )
 
 
-class UserHelper:
+class UserService:
     def create_user(
         self,
         email: str,
@@ -31,7 +31,7 @@ class UserHelper:
         return get_object_or_404(User, email=email)
 
 
-class OrganizationHelper:
+class OrganizationService:
     def create_organization(
         self,
         name: str,

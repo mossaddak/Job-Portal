@@ -3,12 +3,11 @@ from django.contrib.auth.hashers import make_password
 
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.generics import get_object_or_404
 
-from .helpers.users import UserHelper, OrganizationHelper
+from .services.users import UserService, OrganizationService
 from .utils import TokenHelper
 from .choices import OrganizationUserRole, OrganizationUserRole, OrganizationStatus
-from .models import OrganizationUser, UserRole, Organization
+from .models import UserRole
 
 User = get_user_model()
 
@@ -112,20 +111,20 @@ class PublicOrganizationUserOnboarding(serializers.Serializer):
         organization_name = validated_data.get("organization_name", "")
 
         # Create user
-        user = UserHelper.create_user(self, email, password, first_name, last_name)
+        user = UserService.create_user(self, email, password, first_name, last_name)
 
         # Create organization
-        organization = OrganizationHelper.create_organization(
+        organization = OrganizationService.create_organization(
             self, name=organization_name
         )
 
         # Create organization user
-        organization_user = OrganizationHelper.create_organization_user(
+        organization_user = OrganizationService.create_organization_user(
             self, organization, user
         )
 
         # Create organization user role
-        OrganizationHelper.create_user_role(
+        OrganizationService.create_user_role(
             self, user, OrganizationUserRole.OWNER, organization_user
         )
         return validated_data
@@ -164,15 +163,15 @@ class PrivateOrganizationUserSerializer(serializers.Serializer):
                 member_role.save()
             else:
                 # Made the invited user into an organization user
-                organization_user = OrganizationHelper.create_organization_user(
+                organization_user = OrganizationService.create_organization_user(
                     self,
                     organization=active_organization,
                     user=invited_user,
                     status=OrganizationStatus.ACTIVE,
                 )
 
-                # Set the organization user role
-                OrganizationHelper.create_user_role(
+                # Update the organization user role
+                OrganizationService.create_user_role(
                     self,
                     user=invited_user,
                     role=role,
@@ -181,12 +180,12 @@ class PrivateOrganizationUserSerializer(serializers.Serializer):
 
         except User.DoesNotExist:
             # Create new user
-            new_member = UserHelper.create_user(
+            new_member = UserService.create_user(
                 self, email, password, first_name, last_name
             )
 
             # Create organization user
-            organization_user = OrganizationHelper.create_organization_user(
+            organization_user = OrganizationService.create_organization_user(
                 self,
                 organization=active_organization,
                 user=new_member,
@@ -194,7 +193,7 @@ class PrivateOrganizationUserSerializer(serializers.Serializer):
             )
 
             # Set the organization user role
-            OrganizationHelper.create_user_role(
+            OrganizationService.create_user_role(
                 self,
                 user=new_member,
                 role=role,

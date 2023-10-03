@@ -57,9 +57,9 @@ class User(AbstractUser):
         return (
             self.organizationuser_set.filter().get(is_default=True).organization or None
         )
-    
+
     def is_organization_member(self):
-        return self.organizationuser_set.filter().exists() 
+        return self.organizationuser_set.filter().exists()
 
 
 class Organization(models.Model):
@@ -96,6 +96,7 @@ class Organization(models.Model):
 
 
 class OrganizationUser(models.Model):
+    uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     status = models.CharField(
@@ -116,7 +117,7 @@ class OrganizationUser(models.Model):
         ]
 
     def __str__(self):
-        return f"ID: {self.id}, Org: {self.organization}, User: {self.user}, Status: {self.status}"
+        return f"ID: {self.pk}, Org: {self.organization}, User: {self.user}, Status: {self.status}"
 
 
 class UserRole(models.Model):

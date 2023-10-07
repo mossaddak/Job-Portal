@@ -55,6 +55,7 @@ from django.db.models import Case, Value, BooleanField, When, F, ExpressionWrapp
 class PublicUserList1(generics.ListAPIView):
     serializer_class = UserAccountSerializer
     queryset = User.objects.filter(is_active=True).order_by("first_name")
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         return self.queryset.filter(first_name="") | self.queryset.filter(last_name="")

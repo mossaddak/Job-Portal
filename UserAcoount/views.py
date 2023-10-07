@@ -44,7 +44,7 @@ class PublicOrganizationOnboarding(generics.CreateAPIView):
 
 class PrivateOrganizationUser(generics.CreateAPIView):
     serializer_class = PrivateOrganizationUserSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
 
 from django.db.models import Q

@@ -14,6 +14,8 @@ from pathlib import Path
 from datetime import timedelta
 import os
 
+from . import helper
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -31,31 +33,7 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-
-DJANGO_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-]
-
-THIRDPARTY_APPS = [
-    "corsheaders",
-    "drf_yasg",
-    "django_cleanup.apps.CleanupConfig",
-    "rest_framework",
-    "rest_framework_simplejwt",
-    "silk",
-]
-
-PROJECT_APPS = [
-    "common",
-    "UserAcoount",
-]
-
-INSTALLED_APPS = DJANGO_APPS + THIRDPARTY_APPS + PROJECT_APPS
+INSTALLED_APPS = helper.DJANGO_APPS + helper.THIRDPARTY_APPS + helper.PROJECT_APPS
 
 # swagger settings
 SWAGGER_SETTINGS = {
@@ -110,16 +88,16 @@ DATABASES = {
 }
 
 # DJANGO REDIS
-# CACHES = {
-#     "default": {
-#         "BACKEND": "django_redis.cache.RedisCache",
-#         "LOCATION": "redis://127.0.0.1:6379/0",
-#         # "LOCATION": os.environ["REDIS_URL"],
-#         "OPTIONS": {
-#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-#         }
-#     }
-# }
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/0",
+        # "LOCATION": os.environ["REDIS_URL"],
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
 
 # JWT config
 REST_FRAMEWORK = {
